@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnifiedCase - Support Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1419;
+            --surface: #1a1f26;
+            --surface-elevated: #232a33;
+            --border: #2d3748;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --tadhack: #8b5cf6;
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .header-brand .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), var(--tadhack));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .header-brand h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .btn-tadhack {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-tadhack:hover:not(:disabled) {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+        
+        .btn-tadhack:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-tadhack.loading { animation: pulse 1.5s infinite; }
+        
+        .btn-simulate {
+            background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-simulate:hover:not(:disabled) { opacity: 0.95; transform: translateY(-1px); }
+        .btn-simulate:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        .status-badge {
+            font-size: 0.8rem;
+            color: var(--success);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        
+        .status-badge.error { color: var(--danger); }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 73px);
+        }
+        
+        .sidebar {
+            width: 360px;
+            min-width: 320px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filters {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        
+        .filter-tab {
+            padding: 0.4rem 0.75rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        
+        .filter-tab:hover {
+            background: var(--surface-elevated);
+            color: var(--text);
+        }
+        
+        .filter-tab.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        
+        .filter-tab .count {
+            background: rgba(0,0,0,0.15);
+            padding: 0.15rem 0.4rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+        }
+        
+        .filter-tab.active .count { background: rgba(255,255,255,0.2); }
+        
+        .filters h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        select {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface-elevated);
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+        
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .auto-refresh input { accent-color: var(--accent); }
+        
+        .case-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .case-card {
+            background: var(--surface-elevated);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            border-left: 3px solid var(--accent);
+            transition: all 0.2s;
+        }
+        
+        .case-card:hover {
+            background: #2a3340;
+        }
+        
+        .case-card.active {
+            background: rgba(59, 130, 246, 0.12);
+            border-left-color: var(--accent);
+        }
+        
+        .case-card.priority-5 { border-left-color: var(--danger); }
+        .case-card.priority-4 { border-left-color: #f97316; }
+        .case-card.priority-3 { border-left-color: var(--warning); }
+        .case-card.priority-2 { border-left-color: var(--success); }
+        .case-card.priority-1 { border-left-color: var(--text-muted); }
+        
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        
+        .case-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .priority-badge {
+            padding: 0.2rem 0.45rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .priority-5 .priority-badge { background: var(--danger); }
+        .priority-4 .priority-badge { background: #f97316; }
+        .priority-3 .priority-badge { background: var(--warning); color: #1a1f26; }
+        .priority-2 .priority-badge { background: var(--success); }
+        .priority-1 .priority-badge { background: var(--text-muted); }
+        
+        .data-source-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .data-source-tadhack {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .data-source-africastalking {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        
+        .case-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        
+        .case-preview {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .collision-alert {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: var(--bg);
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 15%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .empty-state .empty-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--border);
+            opacity: 0.5;
+        }
+        
+        .empty-state h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .case-detail h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .tadhack-banner {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+        
+        .tadhack-banner h4 {
+            color: #a78bfa;
+            margin: 0 0 0.5rem 0;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tadhack-banner p { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+        
+        .customer-info {
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border);
+        }
+        
+        .customer-info h3 {
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        
+        .info-item { font-size: 0.9rem; }
+        
+        .info-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #16a34a; }
+        
+        .btn-warning { background: var(--warning); color: #1a1f26; }
+        .btn-warning:hover { background: #d97706; }
+        
+        .btn-secondary { background: var(--surface-elevated); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        
+        .metric-card {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .metric-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        
+        .audio-player {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: var(--radius);
+            margin: 1.25rem 0;
+        }
+        
+        .audio-player h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .audio-player audio { width: 100%; border-radius: 4px; }
+        
+        .audio-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+        }
+        
+        .audio-meta span { display: flex; align-items: center; gap: 0.35rem; }
+        
+        .timeline {
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        .timeline h3 {
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .timeline-item:last-child { border-bottom: none; }
+        
+        .timeline-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .timeline-icon.sms { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .timeline-icon.voice { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+        .timeline-icon.email { background: rgba(139, 92, 246, 0.15); color: var(--tadhack); }
+        .timeline-section { margin: 1.25rem 0 0.5rem; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+        
+        .timeline-content { flex: 1; }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+        
+        .timeline-time { color: var(--text-muted); font-size: 0.8rem; }
+        
+        .timeline-body {
+            background: var(--surface-elevated);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .sentiment-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        
+        .sentiment-positive { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .sentiment-neutral { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .sentiment-negative { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .modal-content textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            min-height: 100px;
+            font-family: inherit;
+            background: var(--surface-elevated);
+            color: var(--text);
+        }
+        
+        .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+        
+        .tadhack-modal { text-align: center; max-width: 420px; }
+        
+        .tadhack-modal h3 { color: var(--tadhack); margin-bottom: 1rem; display: flex; justify-content: center; gap: 0.5rem; }
+        
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-elevated);
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), var(--tadhack));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .tadhack-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--surface-elevated);
+            border-radius: var(--radius-sm);
+        }
+        
+        .stat-item { text-align: center; }
+        
+        .stat-value { display: block; font-size: 2rem; font-weight: 700; color: var(--accent); }
+        
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); }
+        
+        #tadhackLoadingText { color: var(--text-muted); margin: 1rem 0; min-height: 3em; }
+        
+        .collision-alert-banner {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        @media (max-width: 900px) {
+            .metrics { grid-template-columns: repeat(2, 1fr); }
+            .sidebar { width: 280px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-brand">
+            <div class="logo">
+                <i data-lucide="headphones"></i>
+            </div>
+            <h1>UnifiedCase Dashboard</h1>
+        </div>
+        <div class="header-actions">
+            <button id="simulateBtn" class="btn-simulate" onclick="simulateAfricasTalking()">
+                <i data-lucide="phone-call"></i>
+                Simulate Calls & SMS
+            </button>
+            <button id="loadTadhackBtn" class="btn-tadhack" onclick="loadTadhackData()">
+                <i data-lucide="database"></i>
+                Load TADHack Data
+            </button>
+            <span id="tadhackStatus" class="status-badge"></span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="filters">
+                <div class="filter-tabs" id="filterTabs" style="display: none;">
+                    <button class="filter-tab active" onclick="filterBySource('all')">
+                        <i data-lucide="layers"></i>
+                        All <span class="count" id="count-all">0</span>
+                    </button>
+                    <button class="filter-tab" onclick="filterBySource('africastalking')">
+                        <i data-lucide="phone"></i>
+                        Africa's Talking <span class="count" id="count-at">0</span>
+                    </button>
+                    <button class="filter-tab" onclick="filterBySource('tadhack')">
+                        <i data-lucide="award"></i>
+                        TADHack <span class="count" id="count-tadhack">0</span>
+                    </button>
+                </div>
+                
+                <h3>Filters</h3>
+                <div class="filter-group">
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="pending">Pending</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                    <select id="priorityFilter">
+                        <option value="">All Priority</option>
+                        <option value="4">High (4-5)</option>
+                        <option value="3">Medium (3)</option>
+                        <option value="1">Low (1-2)</option>
+                    </select>
+                </div>
+                <div class="auto-refresh">
+                    <input type="checkbox" id="autoRefresh" checked>
+                    <label for="autoRefresh">Auto-refresh (5s)</label>
+                </div>
+            </div>
+            <div class="case-list" id="caseList">
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                    <p>Loading cases...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content" id="mainContent">
+            <div class="empty-state">
+                <i data-lucide="inbox" class="empty-icon"></i>
+                <h2>Select a case to view details</h2>
+                <p>Choose a case from the sidebar to see conversation timeline and details</p>
+                <button onclick="loadTadhackData()" class="btn-tadhack" style="margin-top: 0.5rem;">
+                    <i data-lucide="database"></i>
+                    Load Sample Data from TADHack
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="smsModal">
+        <div class="modal-content">
+            <h3><i data-lucide="message-square"></i> Send SMS Reply</h3>
+            <textarea id="smsMessage" placeholder="Type your message..."></textarea>
+            <div class="modal-actions">
+                <button onclick="closeModal()" class="btn-secondary">Cancel</button>
+                <button onclick="sendSMS()" class="btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="tadhackModal">
+        <div class="modal-content tadhack-modal">
+            <h3><i data-lucide="award"></i> Loading TADHack 2025 Dataset</h3>
+            <div class="progress-container">
+                <div class="progress-bar" id="tadhackProgress"></div>
+            </div>
+            <p id="tadhackLoadingText">Initializing...</p>
+            <div class="tadhack-stats" id="tadhackStats" style="display: none;">
+                <div class="stat-item">
+                    <span class="stat-value" id="tadhackCount">0</span>
+                    <span class="stat-label">Cases Loaded</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="tadhackDuration">0s</span>
+                    <span class="stat-label">Load Time</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeTadhackModal()" id="tadhackCloseBtn" class="btn-primary" style="display: none;">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>

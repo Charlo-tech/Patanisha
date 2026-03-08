@@ -1,0 +1,41 @@
+# config/chains.yml
+chains:
+  africastalking_processor:
+    links:
+      - deepgram:
+          api_key: ${DEEPGRAM_API_KEY}
+          model: nova-2
+          language: en
+          detect_language: true
+      
+      - analyze:
+          api_key: ${OPENAI_API_KEY}
+          prompt: |
+            Analyze this customer support conversation. Extract:
+            1. Summary (2 sentences)
+            2. Sentiment score (-1.0 to 1.0)
+            3. Key entities (complaint type, product mentioned, urgency level)
+            4. Action items
+            
+            Format as JSON.
+      
+      - check_and_tag:
+          tags:
+            - urgent: "sentiment < -0.5 or 'urgent' in text or 'angry' in text"
+            - follow_up: "'call back' in text or 'follow up' in text"
+            - complaint: "'complaint' in text or 'unhappy' in text or 'bad' in text"
+    
+    storages:
+      - redis:
+          host: localhost
+          port: 6379
+          db: 0
+      - postgres:
+          host: localhost
+          port: 5432
+          database: vcon
+          user: vcon
+          password: vcon
+    
+    ingress_lists: [incoming_africastalking]
+    egress_lists: [processed_africastalking]

@@ -1,0 +1,5 @@
+CONSERVER_SETUP.md
+.env
+.env.example
+backend/.env
+backend/node_modules/

@@ -3,15 +3,19 @@ const axios = require('axios');
 const router = express.Router();
 
 // Stream MP3 from GitHub (path: dayDir/filename e.g. 18/xxx.mp3)
+// On Netlify (serverless), redirect to GitHub for streaming; otherwise buffer/stream
 router.get('/tadhack-audio/:dayDir/:filename', async (req, res) => {
     const { dayDir, filename } = req.params;
     const pathParam = `${dayDir}/${filename}`;
     const githubBase = 'https://raw.githubusercontent.com/vcon-dev/tadhack-2025/main';
     const githubUrl = `${githubBase}/${pathParam}`;
     
+    // Serverless: redirect to GitHub (avoids streaming/buffer limits)
+    if (process.env.NETLIFY) {
+        return res.redirect(302, githubUrl);
+    }
+    
     try {
-        console.log('Streaming TADHack audio:', pathParam);
-        
         const response = await axios({
             method: 'get',
             url: githubUrl,
@@ -22,21 +26,17 @@ router.get('/tadhack-audio/:dayDir/:filename', async (req, res) => {
             }
         });
         
-        // Set proper headers for audio streaming
         res.set('Content-Type', 'audio/mpeg');
         res.set('Accept-Ranges', 'bytes');
         res.set('Content-Disposition', `inline; filename="${filename}"`);
         
-        // Handle range requests for seeking
         if (req.headers.range) {
             res.set('Content-Range', response.headers['content-range']);
             res.status(206);
         }
         
-        // Pipe the stream
         response.data.pipe(res);
         
-        // Handle errors
         response.data.on('error', (err) => {
             console.error('Stream error:', err);
             if (!res.headersSent) {

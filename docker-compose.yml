@@ -1,4 +1,4 @@
-# TADHack 2025 - Conserver infrastructure
+# TADHack 2026 - Conserver infrastructure
 # Usage:
 #   docker-compose up -d                    # Redis + PostgreSQL only
 #   docker-compose --profile full up -d    # + Conserver (set SUPABASE_* in .env)
@@ -47,7 +47,6 @@ services:
       SUPABASE_URL: ${SUPABASE_URL:-}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
-      # Disable API auth for local dev (or set API_KEYS=your-key and CONSERVER_API_KEY in backend/.env)
       API_AUTH_REQUIRED: "false"
     depends_on:
       redis:

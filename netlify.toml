@@ -1,0 +1,32 @@
+[build]
+  publish = "dashboard"
+  command = "cd backend && npm install"
+
+[functions]
+  directory = "netlify/functions"
+  external_node_modules = ["express", "serverless-http"]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  force = true
+  from = "/api/*"
+  status = 200
+  to = "/.netlify/functions/server"
+
+[[redirects]]
+  force = true
+  from = "/webhooks/*"
+  status = 200
+  to = "/.netlify/functions/server"
+
+[[redirects]]
+  force = true
+  from = "/audio/*"
+  status = 200
+  to = "/.netlify/functions/server"
+
+[[redirects]]
+  force = true
+  from = "/health"
+  status = 200
+  to = "/.netlify/functions/server"

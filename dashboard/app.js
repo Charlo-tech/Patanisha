@@ -1,8 +1,7 @@
-// Configuration - use backend URL (port 8001); use same origin only when dashboard is served from backend
-const API_PORT = 8002;
-const API_URL = (typeof window !== 'undefined' && window.location.port === String(API_PORT))
-    ? window.location.origin
-    : `http://localhost:${API_PORT}`;
+// Configuration - use same origin when deployed (Netlify); localhost:8001 for local dev
+const API_URL = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+    ? `http://localhost:8001`
+    : window.location.origin;
 let selectedCaseId = null;
 let refreshInterval = null;
 let tadhackLoading = false;

@@ -1,0 +1,9 @@
+{
+  "name": "patanisha",
+  "private": true,
+  "scripts": {
+    "dev": "cd backend && node server.js",
+    "build": "cd backend && npm install",
+    "start": "cd backend && node server.js"
+  }
+}

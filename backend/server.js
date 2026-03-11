@@ -26,9 +26,11 @@ app.use('/api/cases', caseRoutes);
 app.use('/api/simulate', simulateRoutes);
 app.use('/audio', audioRoutes);
 
-// Serve dashboard (open http://localhost:8001/ to use)
-app.use(express.static(path.join(__dirname, '../dashboard')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../dashboard/index.html')));
+// Serve dashboard (open http://localhost:8001/ to use) - only when not serverless
+if (!process.env.NETLIFY) {
+  app.use(express.static(path.join(__dirname, '../dashboard')));
+  app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../dashboard/index.html')));
+}
 
 // Health check
 app.get('/health', (req, res) => {
@@ -69,8 +71,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || 'Internal server error' });
 });
 
-app.listen(PORT, async () => {
-  console.log(`
+// Export app for Netlify serverless
+module.exports = app;
+
+// Start server when run directly (not required by Netlify)
+if (!process.env.NETLIFY) {
+  app.listen(PORT, async () => {
+    console.log(`
 UnifiedCase Backend Running
 ==============================
 Port: ${PORT}
@@ -78,14 +85,15 @@ API: http://localhost:${PORT}
 Health: http://localhost:${PORT}/health
   `);
 
-  try {
-    console.log('Loading TADHack 2025 dataset...');
-    const cases = await tadhackLoader.loadAllCases();
-    for (const caseData of cases) {
-      db.addTadhackCase(caseData);
+    try {
+      console.log('Loading TADHack 2025 dataset...');
+      const cases = await tadhackLoader.loadAllCases();
+      for (const caseData of cases) {
+        db.addTadhackCase(caseData);
+      }
+      console.log(`Pre-loaded ${cases.length} TADHack cases`);
+    } catch (err) {
+      console.warn('TADHack pre-load skipped:', err.message);
     }
-    console.log(`Pre-loaded ${cases.length} TADHack cases`);
-  } catch (err) {
-    console.warn('TADHack pre-load skipped:', err.message);
-  }
-});
+  });
+}

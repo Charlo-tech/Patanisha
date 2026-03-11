@@ -3,3 +3,5 @@ CONSERVER_SETUP.md
 .env.example
 backend/.env
 backend/node_modules/
+# Local Netlify folder
+.netlify
